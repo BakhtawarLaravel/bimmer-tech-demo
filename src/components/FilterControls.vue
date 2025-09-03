@@ -1,0 +1,295 @@
+<template>
+  <div class="filter-controls">
+    <!-- Categories Filter -->
+    <div class="categories-section">
+      <div class="categories-header">
+        <span class="categories-label">Categories:</span>
+        <button class="clear-filters" @click="clearFilters">Clear filters</button>
+      </div>
+      <div class="categories-filter">
+        <CustomButton
+          v-for="category in categories"
+          :key="category.key"
+          :text="category.name"
+          :variant="selectedCategories.includes(category.key) ? 'primary-white' : 'outline'"
+          size="small"
+          @click="toggleCategory(category.key)"
+          class="category-custom-btn"
+        />
+      </div>
+    </div>
+   
+    <!-- Type and Sort Section - Combined Row -->
+    <div class="type-sort-section">
+      <!-- Type Section -->
+      <div class="type-section">
+        <div class="type-header">
+          <span class="type-label">Type:</span>
+        </div>
+        <div class="type-filter">
+          <CustomButton
+            text="All"
+            :variant="selectedType === 'all' ? 'primary-white' : 'outline'"
+            size="small"
+            @click="updateType('all')"
+          />
+          <CustomButton
+            text="USB"
+            :variant="selectedType === 'usb' ? 'primary-white' : 'outline'"
+            size="small"
+            @click="updateType('usb')"
+          />
+          <CustomButton
+            text="Cable"
+            :variant="selectedType === 'cable' ? 'primary-white' : 'outline'"
+            size="small"
+            @click="updateType('cable')"
+          />
+        </div>
+      </div>
+
+      <!-- Sort Section -->
+      <div class="sort-section">
+        <div class="control-group">
+          <label for="sort-filter">Sort by</label>
+          <select id="sort-filter" :value="sortBy" @change="updateSort($event.target.value)">
+            <option value="default">Default</option>
+            <option value="price-low">Price (low to high)</option>
+            <option value="price-high">Price (high to low)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import CustomButton from './CustomButton.vue'
+
+export default {
+  name: 'FilterControls',
+  components: {
+    CustomButton
+  },
+  props: {
+    categories: {
+      type: Array,
+      required: true
+    },
+    selectedCategories: {
+      type: Array,
+      default: () => []
+    },
+    selectedType: {
+      type: String,
+      default: 'all'
+    },
+    sortBy: {
+      type: String,
+      default: 'default'
+    }
+  },
+  emits: ['toggle-category', 'update-selected-type', 'update-sort-by', 'clear-filters'],
+  methods: {
+    toggleCategory(category) {
+      this.$emit('toggle-category', category);
+    },
+    updateType(type) {
+      console.log('FilterControls: Updating type to:', type);
+      this.$emit('update-selected-type', type);
+    },
+    updateSort(sortValue) {
+      console.log('FilterControls: Updating sort to:', sortValue);
+      this.$emit('update-sort-by', sortValue);
+    },
+    clearFilters() {
+      this.$emit('clear-filters');
+    }
+  }
+}
+</script>
+
+<style scoped>
+.filter-controls {
+  margin-bottom: 40px;
+}
+
+.categories-section {
+  margin-bottom: 32px;
+}
+
+.categories-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.categories-label {
+  font-size: 16px;
+  color: #fff;
+  font-weight: 400;
+}
+
+.clear-filters {
+  background: none;
+  border: none;
+  color: #999;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 4px 0;
+  text-decoration: underline;
+  font-family: inherit;
+}
+
+.clear-filters:hover {
+  color: #fff;
+}
+
+.categories-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+.category-custom-btn {
+  margin-right: 0;
+}
+
+/* Type and Sort Combined Section */
+.type-sort-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 32px;
+}
+
+.type-section {
+  flex: 1;
+}
+
+.type-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.type-label {
+  font-size: 16px;
+  color: #fff;
+  font-weight: 400;
+}
+
+.type-filter {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-start;
+}
+
+/* Sort Section */
+.sort-section {
+  flex-shrink: 0;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.control-group label {
+  font-size: 16px;
+  color: #fff;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+select {
+  padding: 8px 32px 8px 0;
+  border: none;
+  border-bottom: 1px solid #ffffff;
+  border-radius: 0;
+  background-color: transparent;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 400;
+  min-width: 160px;
+  height: 36px;
+  font-family: inherit;
+  flex-shrink: 0;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 12px;
+}
+
+select option {
+  background-color: #1a1a1a !important;
+  color: #fff !important;
+  padding: 8px;
+}
+
+select option:hover,
+select option:focus,
+select option:checked:hover {
+  background-color: #4ECDC4 !important;
+  color: #000 !important;
+}
+
+select:focus {
+  outline: none;
+}
+
+select:hover {
+  border-bottom-color: #cccccc;
+}
+
+@media (max-width: 768px) {
+  .categories-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .categories-filter {
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .type-sort-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .type-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .type-filter {
+    justify-content: flex-start;
+    gap: 8px;
+  }
+  
+  .sort-section {
+    width: 100%;
+  }
+  
+  .control-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+  }
+  
+  select {
+    width: 100%;
+  }
+}
+</style>
