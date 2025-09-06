@@ -7,15 +7,31 @@
         <button class="clear-filters" @click="clearFilters">Clear filters</button>
       </div>
       <div class="categories-filter">
-        <CustomButton
+        <button
           v-for="category in categories"
           :key="category.key"
-          :text="category.name"
-          :variant="selectedCategories.includes(category.key) ? 'primary-white' : 'outline'"
-          size="small"
+          :class="['filter-button', { 'active': selectedCategories.includes(category.key) }]"
           @click="toggleCategory(category.key)"
-          class="category-custom-btn"
-        />
+        >
+          <svg class="button-svg" viewBox="0 0 100 50" preserveAspectRatio="none">
+            <!-- Fill background when active -->
+            <path 
+              v-if="selectedCategories.includes(category.key)"
+              d="M 12 0 L 100 0 L 100 25 L 88 50 L 0 50 L 0 25 Z"
+              fill="#ffffff"
+            />
+            <!-- Always show stroke -->
+            <path 
+              d="M 12 0 L 100 0 L 100 25 L 88 50 L 0 50 L 0 25 Z"
+              fill="none" 
+              stroke="#ffffff"
+              stroke-width="1"
+              vector-effect="non-scaling-stroke"
+              :class="{ 'active-stroke': selectedCategories.includes(category.key) }"
+            />
+          </svg>
+          <span class="button-text">{{ category.name }}</span>
+        </button>
       </div>
     </div>
    
@@ -27,24 +43,75 @@
           <span class="type-label">Type:</span>
         </div>
         <div class="type-filter">
-          <CustomButton
-            text="All"
-            :variant="selectedType === 'all' ? 'primary-white' : 'outline'"
-            size="small"
+          <button
+            :class="['filter-button', { 'active': selectedType === 'all' }]"
             @click="updateType('all')"
-          />
-          <CustomButton
-            text="USB"
-            :variant="selectedType === 'usb' ? 'primary-white' : 'outline'"
-            size="small"
+          >
+            <svg class="button-svg" viewBox="0 0 100 50" preserveAspectRatio="none">
+              <!-- Fill background when active -->
+              <path 
+                v-if="selectedType === 'all'"
+                d="M 12 0 L 100 0 L 100 25 L 88 50 L 0 50 L 0 25 Z"
+                fill="#ffffff"
+              />
+              <!-- Always show stroke -->
+              <path 
+                d="M 12 0 L 100 0 L 100 25 L 88 50 L 0 50 L 0 25 Z"
+                fill="none" 
+                stroke="#ffffff"
+                stroke-width="1"
+                vector-effect="non-scaling-stroke"
+                :class="{ 'active-stroke': selectedType === 'all' }"
+              />
+            </svg>
+            <span class="button-text">All</span>
+          </button>
+          <button
+            :class="['filter-button', { 'active': selectedType === 'usb' }]"
             @click="updateType('usb')"
-          />
-          <CustomButton
-            text="Cable"
-            :variant="selectedType === 'cable' ? 'primary-white' : 'outline'"
-            size="small"
+          >
+            <svg class="button-svg" viewBox="0 0 100 50" preserveAspectRatio="none">
+              <!-- Fill background when active -->
+              <path 
+                v-if="selectedType === 'usb'"
+                d="M 12 0 L 100 0 L 100 25 L 88 50 L 0 50 L 0 25 Z"
+                fill="#ffffff"
+              />
+              <!-- Always show stroke -->
+              <path 
+                d="M 12 0 L 100 0 L 100 25 L 88 50 L 0 50 L 0 25 Z"
+                fill="none" 
+                stroke="#ffffff"
+                stroke-width="1"
+                vector-effect="non-scaling-stroke"
+                :class="{ 'active-stroke': selectedType === 'usb' }"
+              />
+            </svg>
+            <span class="button-text">USB</span>
+          </button>
+          <button
+            :class="['filter-button', { 'active': selectedType === 'cable' }]"
             @click="updateType('cable')"
-          />
+          >
+            <svg class="button-svg" viewBox="0 0 100 50" preserveAspectRatio="none">
+              <!-- Fill background when active -->
+              <path 
+                v-if="selectedType === 'cable'"
+                d="M 12 0 L 100 0 L 100 25 L 88 50 L 0 50 L 0 25 Z"
+                fill="#ffffff"
+              />
+              <!-- Always show stroke -->
+              <path 
+                d="M 12 0 L 100 0 L 100 25 L 88 50 L 0 50 L 0 25 Z"
+                fill="none" 
+                stroke="#ffffff"
+                stroke-width="1"
+                vector-effect="non-scaling-stroke"
+                :class="{ 'active-stroke': selectedType === 'cable' }"
+              />
+            </svg>
+            <span class="button-text">Cable</span>
+          </button>
         </div>
       </div>
 
@@ -64,13 +131,8 @@
 </template>
 
 <script>
-import CustomButton from './CustomButton.vue'
-
 export default {
   name: 'FilterControls',
-  components: {
-    CustomButton
-  },
   props: {
     categories: {
       type: Array,
@@ -122,7 +184,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .categories-label {
@@ -138,7 +200,6 @@ export default {
   font-size: 14px;
   cursor: pointer;
   padding: 4px 0;
-  text-decoration: underline;
   font-family: inherit;
 }
 
@@ -149,12 +210,8 @@ export default {
 .categories-filter {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
   justify-content: flex-start;
-}
-
-.category-custom-btn {
-  margin-right: 0;
 }
 
 /* Type and Sort Combined Section */
@@ -173,7 +230,7 @@ export default {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .type-label {
@@ -185,9 +242,71 @@ export default {
 .type-filter {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 12px;
   justify-content: flex-start;
 }
+
+/* Filter Button Styles */
+.filter-button {
+  position: relative;
+  cursor: pointer;
+  font-weight: 200;
+  transition: none; /* Remove transform transitions to prevent movement */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  line-height: 1;
+  letter-spacing: 0.3px;
+  outline: none;
+  border: none;
+  background: transparent;
+  min-width: 120px;
+  width: auto;
+  height: 40px;
+  font-size: 15px;
+  padding: 12px 24px;
+}
+
+.button-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* Active stroke styling */
+.active-stroke {
+  stroke: #000000 !important;
+}
+
+.button-text {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  transition: color 0.2s ease;
+  color: #fff;
+}
+
+.filter-button.active .button-text {
+  color: #000;
+}
+
+/* Hover states - only affect the specific button being hovered */
+.filter-button:hover:not(:disabled):not(.active) path {
+  stroke: #cccccc;
+}
+
+.filter-button:hover:not(:disabled):not(.active) .button-text {
+  color: #fff;
+}
+
+.filter-button:hover:not(:disabled).active .button-text {
+  color: #000;
+}
+
 
 /* Sort Section */
 .sort-section {
@@ -208,7 +327,7 @@ export default {
 }
 
 select {
-  padding: 8px 32px 8px 0;
+  padding: 12px 32px 12px 0;
   border: none;
   border-bottom: 1px solid #ffffff;
   border-radius: 0;
@@ -217,7 +336,7 @@ select {
   font-size: 14px;
   font-weight: 400;
   min-width: 160px;
-  height: 36px;
+  height: 44px;
   font-family: inherit;
   flex-shrink: 0;
   appearance: none;

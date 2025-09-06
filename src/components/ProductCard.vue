@@ -1,51 +1,92 @@
 <template>
-  <div class="product-card" :class="{ 'in-cart': isInCart, 'cable-product': product.cable, 'usb-product': !product.cable }">
-    <!-- Header with title and badge -->
-    <div class="product-header">
-      <h3 class="product-name">{{ product.name }}</h3>
-      <span class="product-type-badge" :class="{ 'cable-badge': product.cable, 'usb-badge': !product.cable }">
-        {{ product.cable ? 'CABLE' : 'USB' }}
-      </span>
+  <div class="product-card">
+    <!-- SVG Border -->
+    <svg class="card-border-svg" viewBox="0 0 300 284" preserveAspectRatio="none">
+      <path 
+        d="M 0 0 L 300 0 L 300 253 L 267 284 L 0 284 Z"
+        fill="none" 
+        stroke="#333333" 
+        stroke-width="2"
+        vector-effect="non-scaling-stroke"
+      />
+    </svg>
+
+    <!-- Header with icon and title -->
+    <div class="card-header">
+      <div class="header-content">
+        <!-- Product Icon -->
+        <div class="product-icon">
+          <img src="/icons/bluetooth.svg" alt="Bluetooth Icon" />
+        </div>
+        
+        <!-- Title -->
+        <div class="title-section">
+          <h2 class="main-title">{{ product.name }}</h2>
+        </div>
+      </div>
+      
+      <!-- Badge (Cable/USB/Digital) -->
+      <div :class="badgeClass">
+        {{ badgeText }}
+      </div>
     </div>
 
-    <!-- Description with line breaks -->
-    <p class="product-description">{{ formattedDescription }}</p>
-
-    <!-- Learn more link -->
-    <div class="learn-more-section">
-      <button 
-        class="learn-more-link"
-        @click="$emit('learn-more', product)"
-      >
+    <!-- Card Content -->
+    <div class="card-content">
+      <p class="description">
+        {{ product.smallDescription }}
+      </p>
+      
+      <button class="learn-more-btn" @click="learnMore">
         Learn more →
       </button>
-    </div>
-
-    <!-- Footer with price and select button -->
-    <div class="product-footer">
-      <div class="product-price">
-        <span class="original-price" v-if="product.originalPrice">${{ product.originalPrice }}</span>
-        <span class="current-price">${{ product.price }}.-</span>
+      
+      <!-- Price Section -->
+      <div class="price-section">
+        <div class="price-container">
+          <!-- Static discounted price (always shown) -->
+          <span class="original-price">
+            ${{ staticDiscountedPrice }}.-
+          </span>
+          <span class="current-price">${{ product.price }}.-</span>
+        </div>
+        
+        <button class="select-btn" @click="toggleCart" :class="{ 'selected': isInCart }">
+          <svg class="button-svg" viewBox="0 0 100 36" preserveAspectRatio="none">
+            <!-- Fill background when not selected (default state) -->
+            <defs>
+              <linearGradient id="defaultGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#317F6F;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#1B7E8B;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            <path 
+              v-if="!isInCart"
+              d="M 12 0 L 100 0 L 100 25 L 88 36 L 0 36 L 0 11 Z"
+              fill="url(#defaultGradient)"
+            />
+            <!-- Always show stroke -->
+            <path 
+              d="M 12 0 L 100 0 L 100 25 L 88 36 L 0 36 L 0 11 Z"
+              fill="none" 
+              :stroke="isInCart ? '#267778' : 'transparent'"
+              stroke-width="1.5"
+              vector-effect="non-scaling-stroke"
+            />
+          </svg>
+          <span class="button-text">{{ selectButtonText }}</span>
+        </button>
       </div>
-      <CustomButton
-        :text="isInCart ? 'Remove' : '+ Select'"
-        :variant="cartButtonVariant"
-        size="small"
-        @click="$emit('toggle-cart', product)"
-        class="select-button"
-      />
     </div>
+    
+    <!-- Angled Corner -->
+    <div class="angled-corner"></div>
   </div>
 </template>
 
 <script>
-import CustomButton from './CustomButton.vue'
-
 export default {
   name: 'ProductCard',
-  components: {
-    CustomButton
-  },
   props: {
     product: {
       type: Object,
@@ -54,15 +95,46 @@ export default {
     isInCart: {
       type: Boolean,
       default: false
+    },
+    isOtherProduct: {
+      type: Boolean,
+      default: false
     }
   },
+  emits: ['learn-more', 'toggle-cart'],
   computed: {
-    cartButtonVariant() {
-      return this.isInCart ? 'secondary' : 'primary';
+    selectButtonText() {
+      return this.isInCart ? 'Remove' : '+ Select';
     },
-    formattedDescription() {
-      // Replace line breaks in the description with proper formatting
-      return this.product.smallDescription.replace(/\n/g, '<br>');
+    badgeText() {
+      if (this.product.cable) {
+        return 'Cable';
+      } else if (this.product.custom) {
+        return 'Digital';
+      } else {
+        return 'USB';
+      }
+    },
+    badgeClass() {
+      if (this.product.cable) {
+        return 'cable-badge';
+      } else if (this.product.custom) {
+        return 'digital-badge';
+      } else {
+        return 'usb-badge';
+      }
+    },
+    staticDiscountedPrice() {
+      // Calculate a static discounted price (20% higher than current price)
+      return Math.round(this.product.price * 1.2);
+    }
+  },
+  methods: {
+    toggleCart() {
+      this.$emit('toggle-cart', this.product);
+    },
+    learnMore() {
+      this.$emit('learn-more', this.product);
     }
   }
 }
@@ -70,155 +142,321 @@ export default {
 
 <style scoped>
 .product-card {
-  background: #1a1a1a;
-  padding: 20px;
-  color: #ffffff;
   position: relative;
-  transition: all 0.2s ease;
-  border: 1px solid #333333;
-  height: fit-content;
-  min-height: 280px;
-  display: flex;
-  flex-direction: column;
-  width: 280px;
-  font-family: Arial, sans-serif;
-  /* Angled bottom-right corner */
-  clip-path: polygon(0 0, 100% 0, 100% 85%, 85% 100%, 0 100%);
+  background-color: #010607;
+  width: 100%;
+  max-width: 300px;
+  height: 284px;
+  overflow: hidden;
+  clip-path: polygon(0 0, 100% 0, 100% 89%, 89% 100%, 0 100%);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .product-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-  border-color: #4ECDC4;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
-.product-header {
+/* SVG Border */
+.card-border-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+}
+
+.card-header {
+  background: #FFFFFF;
+  height: 100px;
+  padding: 16px 0 16px 20px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-  background: white;
-  margin: -20px -20px 16px -20px;
-  padding: 15px 20px;
-  min-height: 80px;
+  align-items: center;
+  position: relative;
 }
 
-.product-name {
-  font-size: 18px;
-  font-weight: 700;
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.product-icon {
+  width: 40px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.product-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.default-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.title-section {
+  flex: 1;
+  min-width: 0;
+  padding-right: 8px;
+}
+
+.main-title {
+  font-family: 'Strait', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 100%;
+  letter-spacing: 0%;
+  color: #267778;
   margin: 0;
-  color: #000000;
-  line-height: 1.3;
-  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
 }
 
-.product-type-badge {
-  display: inline-block;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 700;
+.cable-badge,
+.usb-badge,
+.digital-badge {
+  color: white;
+  padding: 0;
+  font-size: 11px;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  height: 100px;
+  width: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: -16px -1px;
+  flex-shrink: 0;
 }
 
 .cable-badge {
-  background: #FFD166;
-  color: #000000;
+  background: #1DAE90;
 }
 
 .usb-badge {
-  background: #4ECDC4;
-  color: #000000;
+  background: #1E99AA;
 }
 
-.product-description {
+.digital-badge {
+  background: #FF6B6B;
+}
+
+.card-content {
+  padding: 20px 20px 16px 20px;
+  height: calc(100% - 100px);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background-color: #010607;
+  color: white;
+}
+
+.description {
+  font-family: 'Spline Sans Mono', monospace;
+  font-weight: 400;
+  font-style: normal;
   font-size: 14px;
-  color: #cccccc;
-  margin-bottom: 16px;
-  line-height: 1.5;
+  line-height: 22px;
+  letter-spacing: 0%;
+  color: #FFFFFF;
+  margin: 0 0 16px 0;
   flex-grow: 1;
-  text-align: left;
-  white-space: pre-line;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
 }
 
-.learn-more-section {
-  margin-bottom: 20px;
-  text-align: left;
-}
-
-.learn-more-link {
+.learn-more-btn {
   background: none;
   border: none;
-  color: #4ECDC4;
+  color: #267F7D;
+  font-family: 'Spline Sans Mono', monospace;
+  font-weight: 600;
+  font-style: normal;
   font-size: 14px;
-  font-weight: 500;
+  line-height: 100%;
+  letter-spacing: 0%;
   cursor: pointer;
-  text-decoration: none;
-  transition: color 0.2s ease;
+  text-align: left;
   padding: 0;
+  margin-bottom: 16px;
+  transition: color 0.2s ease;
+  align-self: flex-start;
+  text-transform: lowercase;
+  /* text-decoration: underline; */
 }
 
-.learn-more-link:hover {
-  color: #5fded5;
-  text-decoration: underline;
+.learn-more-btn:hover {
+  color: #60E6D7;
 }
 
-.product-footer {
+.price-section {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
   margin-top: auto;
+  gap: 12px;
 }
 
-.product-price {
+.price-container {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
 }
 
 .original-price {
   font-size: 14px;
-  color: #888888;
+  font-weight: 400;
+  color: #E74C3C;
   text-decoration: line-through;
+  line-height: 1;
+  font-family: 'Spline Sans Mono', monospace;
 }
 
 .current-price {
+  font-family: 'Spline Sans Mono', monospace;
+  font-weight: 600;        /* SemiBold = 600 */
+  font-style: normal;      /* 'SemiBold' is handled by font-weight, not font-style */
   font-size: 18px;
-  font-weight: 700;
-  color: #ffffff;
+  line-height: 100%;       /* or line-height: 1; */
+  letter-spacing: 0;
+  color: white;
 }
 
-.select-button {
-  flex-shrink: 0;
+/* SVG Button Styles */
+.select-btn {
+  position: relative;
+  cursor: pointer;
+  font-weight: 500;
+  font-family: 'Strait', sans-serif;
+  transition: transform 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  line-height: 1;
+  outline: none;
+  border: none;
+  background: transparent;
+  min-width: 90px;
+  height: 36px;
+  font-size: 13px;
+  padding: 10px 18px;
+  text-transform: capitalize;
 }
 
-/* Override button styles to match requirements */
-.select-button:deep(.custom-button) {
-  background: #4ECDC4;
-  color: #ffffff !important;
-  border: none !important;
-  /* border-radius: 6px; */
-  padding: 8px 16px;
-  font-weight: 600;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  clip-path: polygon(12% 0%, 100% 0%, 100% 50%, 88% 100%, 0% 100%, 0% 50%);
+.button-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
 }
 
-.select-button:deep(.custom-button:hover) {
-  background: #5fded5;
+.button-text {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+  transition: color 0.2s ease;
+  color: white;
+}
+
+/* Selected (Remove) state styling */
+.select-btn.selected .button-text {
+  color: #267778;
+}
+
+/* Hover states */
+.select-btn:hover:not(.selected) {
   transform: translateY(-1px);
 }
 
-/* Variant for when item is in cart */
-.product-card.in-cart .select-button:deep(.custom-button) {
-  background: #333333;
-  color: #ffffff !important;
-  border: none !important;
+.select-btn:hover:not(.selected) path[fill="url(#defaultGradient)"] {
+  fill: #2d8688;
 }
 
-.product-card.in-cart .select-button:deep(.custom-button:hover) {
-  background: #444444;
+.select-btn:hover.selected {
+  background: rgba(38, 119, 120, 0.1);
+}
+
+.select-btn:hover.selected .button-text {
+  color: #2d8688;
+}
+
+.select-btn:hover.selected path[stroke="#267778"] {
+  stroke: #2d8688;
+}
+
+/* Angled corner effect */
+.angled-corner {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  background: transparent;
+  pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .product-card {
+    height: 280px;
+    max-width: 280px;
+  }
+  
+  .main-title {
+    font-size: 20px;
+    max-height: 44px;
+  }
+  
+  .header-content {
+    gap: 12px;
+  }
+  
+  .product-icon {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (max-width: 320px) {
+  .card-header {
+    padding: 12px 0 12px 16px;
+  }
+  
+  .card-content {
+    padding: 16px;
+  }
+  
+  .select-btn {
+    min-width: 80px;
+    font-size: 12px;
+  }
 }
 </style>
